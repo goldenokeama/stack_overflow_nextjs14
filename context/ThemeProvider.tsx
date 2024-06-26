@@ -15,18 +15,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState("");
 
   const handleThemeChange = () => {
-    if (mode === "dark") {
-      setMode("light");
-      document.documentElement.classList.add("light");
-    } else {
+    // figuring out if our users OS prefers the dark mode
+    if (
+      localStorage.theme === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
       setMode("dark");
       document.documentElement.classList.add("dark");
+    } else {
+      setMode("light");
+      document.documentElement.classList.remove("dark");
     }
   };
 
   useEffect(() => {
-    // handleThemeChange(); causing multiple re-rendering so I commented it out
-  }, []);
+    handleThemeChange();
+    console.log("handleThemeChange from useEffect in ThemeProvider");
+  }, [mode]);
 
   // Providers almost always returns the context
   return (
