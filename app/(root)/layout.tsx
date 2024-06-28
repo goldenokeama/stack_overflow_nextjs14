@@ -17,7 +17,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </div>
       {/* <Toaster/> */}
       {/* Toaster component, a notification that pops up once we do some kind of action  */}
-      T
     </main>
   );
 };
