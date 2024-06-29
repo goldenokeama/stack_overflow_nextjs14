@@ -1,48 +1,48 @@
-// import QuestionCard from "@/components/cards/QuestionCard";
+import QuestionCard from "@/components/cards/QuestionCard";
 import HomeFilters from "@/components/home/HomeFilters";
 import Filter from "@/components/shared/Filter";
-// import NoResult from "@/components/shared/NoResult";
+import NoResult from "@/components/shared/NoResult";
 import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { Button } from "@/components/ui/button";
 import { HomePageFilters } from "@/constants/filters";
 import Link from "next/link";
 
-// const questions = [
-//   {
-//     _id: "1",
-//     title: "Cascading Deletes in SQLAlchemy?",
-//     tags: [
-//       { _id: "1", name: "python" },
-//       { _id: "2", name: "sql" },
-//     ],
-//     author: {
-//       _id: "1",
-//       name: "John Doe",
-//       picture: "john-doe.jpg",
-//     },
-//     upvotes: 1500000,
-//     views: 500552,
-//     answers: [],
-//     createdAt: new Date("2023-09-01T12:00:00.000Z"),
-//   },
-//   {
-//     _id: "2",
-//     title: "How to center a div?",
-//     tags: [
-//       { _id: "3", name: "css" },
-//       { _id: "4", name: "html" },
-//     ],
-//     author: {
-//       _id: "2",
-//       name: "Jane Smith",
-//       picture: "jane-smith.jpg",
-//     },
-//     upvotes: 5,
-//     views: 50,
-//     answers: [],
-//     createdAt: new Date("2021-09-02T10:30:00.000Z"),
-//   },
-// ];
+const questions = [
+  {
+    _id: "1",
+    title: "Cascading Deletes in SQLAlchemy?",
+    tags: [
+      { _id: "1", name: "python" },
+      { _id: "2", name: "sql" },
+    ],
+    author: {
+      _id: "1",
+      name: "John Doe",
+      picture: "john-doe.jpg",
+    },
+    upvotes: 1500000,
+    views: 500552,
+    answers: [],
+    createdAt: new Date("2023-09-01T12:00:00.000Z"),
+  },
+  {
+    _id: "2",
+    title: "How to center a div?",
+    tags: [
+      { _id: "3", name: "css" },
+      { _id: "4", name: "html" },
+    ],
+    author: {
+      _id: "2",
+      name: "Jane Smith",
+      picture: "jane-smith.jpg",
+    },
+    upvotes: 5,
+    views: 50,
+    answers: [],
+    createdAt: new Date("2021-09-02T10:30:00.000Z"),
+  },
+];
 
 export default function Home() {
   return (
@@ -75,7 +75,7 @@ export default function Home() {
 
       <HomeFilters />
 
-      {/* <div className="mt-10 flex w-full flex-col gap-6">
+      <div className="mt-10 flex w-full flex-col gap-6">
         {questions.length > 0 ? (
           questions.map((question) => (
             <QuestionCard
@@ -98,7 +98,7 @@ export default function Home() {
             linkTitle="Ask a Question"
           />
         )}
-      </div> */}
+      </div>
     </>
   );
 }
