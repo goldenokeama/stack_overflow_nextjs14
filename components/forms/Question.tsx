@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,6 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { QuestionsSchema } from "@/lib/validations";
+import { Badge } from "../ui/badge";
+import Image from "next/image";
 
 // OUR QUESTION COMPONENT
 const Question = () => {
@@ -39,6 +41,40 @@ const Question = () => {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
+  }
+
+  function handleInputKeyDown(e: React.KeyboardEvent, field: any) {
+    // checking if the enter key was pressed and if we are on the tags input field
+    if (e.key === "Enter" && field.name === "tags") {
+      e.preventDefault();
+      // using type assertion "as" to tell TypeScript to treat the Element that triggered the event "e.target" as HTMLInputElement type so we can have access to its properties and methods
+      const tagInput = e.target as HTMLInputElement;
+      const tagValue = tagInput.value.trim();
+
+      if (tagValue !== "") {
+        if (tagValue.length > 15) {
+          return form.setError("tags", {
+            type: "required",
+            message: "Tag must be less than 15 characters.",
+          });
+        }
+
+        // checking that the tag doesn't exist already within the fields, this way, we can't add two JavaScript tags
+        if (!field.value.includes(tagValue as never)) {
+          form.setValue("tags", [...field.value, tagValue]);
+          tagInput.value = "";
+          form.clearErrors("tags");
+        }
+      } else {
+        form.trigger();
+      }
+    }
+  }
+
+  function handleTagRemove(tag: string, field: any) {
+    // filtering through the array of tags
+    const newTag = field.value.filter((t: string) => t !== tag);
+    form.setValue("tags", newTag);
   }
 
   return (
@@ -124,6 +160,7 @@ const Question = () => {
             </FormItem>
           )}
         />
+        {/* THE TAG FUNCTIONALITY */}
         <FormField
           control={form.control}
           name="tags"
@@ -133,11 +170,34 @@ const Question = () => {
                 Tags<span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
-                <Input
-                  className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light900 min-h-[56px] border"
-                  placeholder="Add tags..."
-                  {...field}
-                />
+                <>
+                  <Input
+                    className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light900 min-h-[56px] border"
+                    placeholder="Add tags..."
+                    onKeyDown={(e) => handleInputKeyDown(e, field)}
+                  />
+
+                  {field.value.length > 0 && (
+                    <div className="flex-start mt-2.5 gap-2">
+                      {field.value.map((tag: any) => (
+                        <Badge
+                          key={tag}
+                          className="subtle-medium background-light800_dark300 text-light400_light500 flex items-center justify-center gap-2 rounded-md border-none px-4 py-2 capitalize"
+                          onClick={() => handleTagRemove(tag, field)}
+                        >
+                          {tag}
+                          <Image
+                            src="/assets/icons/close.svg"
+                            alt="Close icon"
+                            width={12}
+                            height={12}
+                            className="cursor-pointer object-contain invert-0 dark:invert"
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </>
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Add up to 3 tags to describe what your question is about. You
