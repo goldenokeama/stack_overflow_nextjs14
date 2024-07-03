@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,10 +21,14 @@ import { QuestionsSchema } from "@/lib/validations";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 
+// NOTE: WE WANT THIS FORM TO BE REUSABLE
+const type: any = "create";
+
 // OUR QUESTION COMPONENT
 const Question = () => {
   // establish a reference using useRef hook so we don't have to manually track every key stroke
   const editorRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
@@ -38,8 +42,19 @@ const Question = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof QuestionsSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+    setIsSubmitting(true);
+
+    // no matter what hapens, the finally block must run
+    try {
+      // we can try to create a question or edit a question
+      // 1st let's create a question
+      // -- make an async call to your api --> create a question
+      // --- navigate to the home page to see the question we asked
+    } catch (error) {
+    } finally {
+      setIsSubmitting(false);
+    }
+
     console.log(values);
   }
 
@@ -207,7 +222,17 @@ const Question = () => {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button
+          type="submit"
+          className="primary-gradient w-fit !text-light-900"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>{type === "edit" ? "Editing..." : "Posting..."}</>
+          ) : (
+            <>{type === "edit" ? "Edit Question" : "Ask a Question"}</>
+          )}
+        </Button>
       </form>
     </Form>
   );
