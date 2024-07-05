@@ -1,5 +1,6 @@
 import { Schema, models, model, Document } from "mongoose";
 
+// creating an interface so we always know which fields we have
 export interface IQuestion extends Document {
   title: string;
   content: string;
