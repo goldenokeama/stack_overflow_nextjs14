@@ -20,6 +20,7 @@ import { Button } from "../ui/button";
 import { QuestionsSchema } from "@/lib/validations";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
+import { createQuestiion } from "@/lib/actions/question.action";
 
 // NOTE: WE WANT THIS FORM TO BE REUSABLE
 const type: any = "create";
@@ -41,7 +42,8 @@ const Question = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof QuestionsSchema>) {
+  async function onSubmit(values: z.infer<typeof QuestionsSchema>) {
+    console.log("OnSubmit fired");
     setIsSubmitting(true);
 
     // no matter what hapens, the finally block must run
@@ -49,6 +51,7 @@ const Question = () => {
       // we can try to create a question or edit a question
       // 1st let's create a question
       // -- make an async call to your api --> create a question
+      await createQuestiion({});
       // --- navigate to the home page to see the question we asked
     } catch (error) {
     } finally {
@@ -137,6 +140,8 @@ const Question = () => {
                     // @ts-ignore
                     editorRef.current = editor;
                   }}
+                  onBlur={field.onBlur} // save the valur once we exit the editor
+                  onEditorChange={(content) => field.onChange(content)}
                   initialValue=""
                   init={{
                     height: 350,
