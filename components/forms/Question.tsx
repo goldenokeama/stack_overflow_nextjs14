@@ -21,15 +21,22 @@ import { QuestionsSchema } from "@/lib/validations";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import { createQuestiion } from "@/lib/actions/question.action";
+import { useRouter, usePathname } from "next/navigation";
 
 // NOTE: WE WANT THIS FORM TO BE REUSABLE
 const type: any = "create";
 
+interface Props {
+  mongoUserId: string;
+}
+
 // OUR QUESTION COMPONENT
-const Question = () => {
+const Question = ({ mongoUserId }: Props) => {
   // establish a reference using useRef hook so we don't have to manually track every key stroke
   const editorRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname(); // TO KNOW THE PATHNAME WE ARE ON RIGHT NOW
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
@@ -44,15 +51,23 @@ const Question = () => {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof QuestionsSchema>) {
     console.log("OnSubmit fired");
+    console.log(mongoUserId);
+    console.log(JSON.parse(mongoUserId));
     setIsSubmitting(true);
 
     // no matter what hapens, the finally block must run
     try {
       // we can try to create a question or edit a question
       // 1st let's create a question
-      // -- make an async call to your api --> create a question
-      await createQuestiion({});
+      // -- make an async call to my api --> createQuestion
+      await createQuestiion({
+        title: values.title,
+        content: values.explanation,
+        tags: values.tags,
+        author: JSON.parse(mongoUserId),
+      });
       // --- navigate to the home page to see the question we asked
+      router.push("/");
     } catch (error) {
     } finally {
       setIsSubmitting(false);

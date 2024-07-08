@@ -16,7 +16,6 @@ export async function connectToDatabase() {
 
   // CONNECTING TO OUR MONGODB DATABASE
   try {
-    console.log(process.env.MONGODB_URL);
     await mongoose.connect(process.env.MONGODB_URL, {
       dbName: "dev-flow",
     });

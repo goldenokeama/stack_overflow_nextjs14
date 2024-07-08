@@ -29,6 +29,6 @@ const QuestionSchema = new Schema({
 
 // NOTE: 2ND, WE USE THE SCHEMA TO CREATE THE MODEL
 // checking if the model already exists if not then create it
-const Question = models.Question || model("Question", QuestionSchema);
+const QuestionModel = models.Question || model("Question", QuestionSchema);
 
-export default Question;
+export default QuestionModel;

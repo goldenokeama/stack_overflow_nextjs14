@@ -1,5 +1,6 @@
 import { Schema, models, model, Document } from "mongoose";
 
+// THE INTERFACE GIVES US THE FIELDS OUR USER DOCUMENT HAS
 export interface IUser extends Document {
   clerkId: string;
   name: string;
@@ -34,6 +35,6 @@ const UserSchema = new Schema({
 
 // NOTE: 2ND, WE USE THE SCHEMA TO CREATE THE MODEL
 // checking if the model already exists if not then create it
-const User = models.User || model("User", UserSchema);
+const UserModel = models.User || model("User", UserSchema);
 
-export default User;
+export default UserModel;
