@@ -65,6 +65,7 @@ const Question = ({ mongoUserId }: Props) => {
         content: values.explanation,
         tags: values.tags,
         author: JSON.parse(mongoUserId),
+        path: pathname,
       });
       // --- navigate to the home page to see the question we asked
       router.push("/");

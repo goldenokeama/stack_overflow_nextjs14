@@ -4,14 +4,31 @@
 import QuestionModel from "@/database/question.model";
 import { connectToDatabase } from "../mongoose";
 import TagModel from "@/database/tag.model";
-import { GetQuestionsParams } from "./shared.types";
+import { CreateQuestionParams, GetQuestionsParams } from "./shared.types";
+import UserModel from "@/database/user.model";
+import { revalidatePath } from "next/cache";
 
 export async function getQuestions(params: GetQuestionsParams) {
   // the GetQuestionsParams type helps us to know what's coming from the frontend
   // and what can be accessed right here in our server
+  try {
+    connectToDatabase();
+
+    // Getting all the question documents from the database and populating the tags array of id with the actual value
+    // and the author field with the actual user data instead if the user id
+    const questions = await QuestionModel.find({})
+      .populate({ path: "tags", model: TagModel })
+      .populate({ path: "author", model: UserModel })
+      .sort({ createdAt: -1 });
+
+    return { questions };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
-export async function createQuestiion(params: any) {
+export async function createQuestiion(params: CreateQuestionParams) {
   // we use trycatch block bcus we are dealing with asynchronous code
   // eslint-disable-next-line no-empty
   try {
@@ -51,5 +68,8 @@ export async function createQuestiion(params: any) {
     // Create an interaction record for the user's ask_question action
 
     // Increment author's reputation by +5 for creating a question
+
+    // NOTE: IN NEXTjs13, we have to reload the home page after asking a question so it apppears on the home page
+    revalidatePath(path);
   } catch (error) {}
 }
