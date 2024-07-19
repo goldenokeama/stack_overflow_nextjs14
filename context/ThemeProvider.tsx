@@ -31,7 +31,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     handleThemeChange();
-    console.log("handleThemeChange from useEffect in ThemeProvider");
   }, [mode]);
 
   // Providers almost always returns the context
