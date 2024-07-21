@@ -31,8 +31,6 @@ import Link from "next/link";
 export default async function Home() {
   // suing our server action [getQuestions()] to get all the question documents in our databse
   const result = await getQuestions({});
-  const WEBHOOK_SECRET = process.env.NEXT_CLERK_WEBHOOK_SECRET;
-  console.log(WEBHOOK_SECRET);
 
   console.log(result.questions);
 
