@@ -4,7 +4,11 @@
 import QuestionModel from "@/database/question.model";
 import { connectToDatabase } from "../mongoose";
 import TagModel from "@/database/tag.model";
-import { CreateQuestionParams, GetQuestionsParams } from "./shared.types";
+import {
+  CreateQuestionParams,
+  GetQuestionByIdParams,
+  GetQuestionsParams,
+} from "./shared.types";
 import UserModel from "@/database/user.model";
 import { revalidatePath } from "next/cache";
 
@@ -72,4 +76,26 @@ export async function createQuestiion(params: CreateQuestionParams) {
     // NOTE: IN NEXTjs13, we have to reload the home page after asking a question so it apppears on the home page
     revalidatePath(path);
   } catch (error) {}
+}
+export async function getQuestionById(params: GetQuestionByIdParams) {
+  try {
+    connectToDatabase();
+
+    // get the id of the question we want to fetch from the database from our params
+    const { questionId } = params;
+
+    // using the id to get the question document from our questions collection(QuestionModel) and populate the tags
+    const question = await QuestionModel.findById(questionId)
+      .populate({ path: "tags", model: TagModel, select: "_id name" })
+      .populate({
+        path: "author",
+        model: UserModel,
+        select: "_id clerkId name picture",
+      });
+
+    return question;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
