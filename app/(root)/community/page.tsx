@@ -7,7 +7,6 @@ import Link from "next/link";
 
 const Page = async () => {
   const result = await getAllUsers({});
-  console.log(result);
 
   return (
     <>
