@@ -6,7 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const page = async ({ params, searchParams }) => {
+interface Params {
+  id: string;
+}
+const page = async ({ params }: { params: Params }) => {
   // using the id of the question (params.id), get the question from the questions collection on our db
   const result = await getQuestionById({ questionId: params.id });
 
@@ -60,7 +63,7 @@ const page = async ({ params, searchParams }) => {
       </div>
 
       {/* creating a shared component called <ParseHTML/> */}
-      <ParseHTML data={result.content} />
+      {/* <ParseHTML data={result.content} /> */}
     </>
   );
 };
