@@ -63,7 +63,7 @@ const page = async ({ params }: { params: Params }) => {
       </div>
 
       {/* creating a shared component called <ParseHTML/> */}
-      {/* <ParseHTML data={result.content} /> */}
+      <ParseHTML data={result.content} />
     </>
   );
 };
