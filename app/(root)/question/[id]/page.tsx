@@ -3,9 +3,12 @@ import Metric from "@/components/shared/Metric";
 import ParseHTML from "@/components/shared/ParseHTML";
 import RenderTag from "@/components/shared/RenderTag";
 import { getQuestionById } from "@/lib/actions/question.action";
+import { getUserById } from "@/lib/actions/user.action";
 import { formatAndDivideNumber, getTimestamp } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import React from "react";
 
 interface Params {
@@ -14,6 +17,19 @@ interface Params {
 const page = async ({ params }: { params: Params }) => {
   // using the id of the question (params.id), get the question from the questions collection on our db
   const result = await getQuestionById({ questionId: params.id });
+
+  // extracting a property named userId from an object returned by the auth() function from clerk database and ASSIGN it to a new constant variable named clerkId.
+  const { userId: clerkId } = auth();
+
+  // you have to sign in b4 you can provide an answe
+  if (!clerkId) redirect("/sign-in");
+
+  let mongoUser;
+
+  if (clerkId) {
+    // using the getUserById server action to get a single user document from mongoDB by passing in an object with userId property whose value is clerkId
+    mongoUser = await getUserById({ userId: clerkId });
+  }
 
   return (
     <>
@@ -80,7 +96,11 @@ const page = async ({ params }: { params: Params }) => {
       </div>
 
       {/* Rendering the Answer form for input our answer for the question */}
-      <Answer />
+      <Answer
+        question={result.content}
+        questionId={JSON.stringify(result._id)}
+        authorId={JSON.stringify(mongoUser._id)}
+      />
     </>
   );
 };

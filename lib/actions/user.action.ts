@@ -15,7 +15,7 @@ import QuestionModel from "@/database/question.model";
 export async function getUserById(params: GetUserByIdParams) {
   try {
     connectToDatabase();
-    console.log(params);
+    console.log("from getUserById", params);
 
     const { userId } = params;
 

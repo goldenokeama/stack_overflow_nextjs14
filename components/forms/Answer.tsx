@@ -16,8 +16,19 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useTheme } from "@/context/ThemeProvider";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import { createAnswer } from "@/lib/actions/answer.action";
+import { usePathname } from "next/navigation";
 
-const Answer = () => {
+interface Props {
+  question: string;
+  questionId: string;
+  authorId: string;
+}
+
+const Answer = ({ question, questionId, authorId }: Props) => {
+  // Getting the current pathname where this form is located
+  const pathname = usePathname();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // using our custom context to know the mode we are in
@@ -34,7 +45,32 @@ const Answer = () => {
     },
   });
 
-  const handleCreateAnswer = () => {};
+  const handleCreateAnswer = async (values: z.infer<typeof AnswerSchema>) => {
+    setIsSubmitting(true);
+    try {
+      // call the createAnswer server action and pass in some values from the form (react-hook-form)
+      await createAnswer({
+        content: values.answer,
+        author: JSON.parse(authorId),
+        question: JSON.parse(questionId),
+        path: pathname,
+      });
+
+      // let's reset the form, So we can add another answer if we want to,
+      form.reset();
+
+      // let's also clear our editor
+      if (editorRef.current) {
+        const editor = editorRef.current as any;
+
+        editor.setContent("");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div>
@@ -43,7 +79,10 @@ const Answer = () => {
           Write your answer here
         </h4>
 
-        <Button className="btn light-border-2 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none dark:text-primary-500" onClick={()=>{}}>
+        <Button
+          className="btn light-border-2 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none dark:text-primary-500"
+          onClick={() => {}}
+        >
           <Image
             src="/assets/icons/stars.svg"
             alt="star"
