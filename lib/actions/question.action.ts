@@ -77,6 +77,7 @@ export async function createQuestiion(params: CreateQuestionParams) {
     revalidatePath(path);
   } catch (error) {}
 }
+
 export async function getQuestionById(params: GetQuestionByIdParams) {
   try {
     connectToDatabase();
