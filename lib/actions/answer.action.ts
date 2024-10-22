@@ -2,7 +2,7 @@
 
 import AnswerModel from "@/database/answer.model";
 import { connectToDatabase } from "../mongoose";
-import { CreateAnswerParams } from "./shared.types";
+import { CreateAnswerParams, GetAnswersParams } from "./shared.types";
 import QuestionModel from "@/database/question.model";
 import { revalidatePath } from "next/cache";
 
@@ -23,6 +23,24 @@ export async function createAnswer(params: CreateAnswerParams) {
     // TODO: Add interaction... i.e increase the reputation of the user that created the answer
 
     revalidatePath(path);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+// createAnswer server action that we can call from our frontend
+export async function getAnswers(params: GetAnswersParams) {
+  try {
+    connectToDatabase();
+
+    const { questionId } = params;
+
+    const answers = await AnswerModel.find({ question: questionId })
+      .populate("author", "_id clerkId name picture")
+      .sort({ createdAt: -1 }); // new answers appear ontop
+
+    return { answers };
   } catch (error) {
     console.log(error);
     throw error;

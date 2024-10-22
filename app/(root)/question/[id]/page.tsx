@@ -1,7 +1,9 @@
 import Answer from "@/components/forms/Answer";
+import AllAnswers from "@/components/shared/AllAnswers";
 import Metric from "@/components/shared/Metric";
 import ParseHTML from "@/components/shared/ParseHTML";
 import RenderTag from "@/components/shared/RenderTag";
+import Votes from "@/components/shared/Votes";
 import { getQuestionById } from "@/lib/actions/question.action";
 import { getUserById } from "@/lib/actions/user.action";
 import { formatAndDivideNumber, getTimestamp } from "@/lib/utils";
@@ -50,7 +52,9 @@ const page = async ({ params }: { params: Params }) => {
               {result.author.name}
             </p>
           </Link>
-          <div className="flex justify-end">VOTING COMPONENT</div>
+          <div className="flex justify-end">
+            <Votes />
+          </div>
         </div>
         <h2 className="h2-semibold text-dark200_light900 mt-3.5 w-full text-left">
           {result.title}
@@ -95,7 +99,14 @@ const page = async ({ params }: { params: Params }) => {
         ))}
       </div>
 
-      {/* Rendering the Answer form for input our answer for the question */}
+      {/* Rendering all the Answers to the question */}
+      <AllAnswers
+        questionId={result._id}
+        userId={JSON.stringify(mongoUser._id)}
+        totalAnswers={result.answers.length}
+      />
+
+      {/* Rendering the Answer form for inputting our answer for the question */}
       <Answer
         question={result.content}
         questionId={JSON.stringify(result._id)}
