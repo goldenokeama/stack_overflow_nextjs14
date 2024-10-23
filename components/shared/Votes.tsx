@@ -1,4 +1,5 @@
 "use client";
+import { downVoteAnswer, upVoteAnswer } from "@/lib/actions/answer.action";
 import {
   downVoteQuestion,
   upVoteQuestion,
@@ -49,13 +50,13 @@ const Votes = ({
           path: pathname,
         });
       } else if (type === "Answer") {
-        // await upVoteAnswer({
-        //   questionId: JSON.parse(itemId),
-        //   userId: JSON.parse(userId),
-        //   hasUpVoted,
-        //   hasDownVoted,
-        //   path: pathname,
-        // });
+        await upVoteAnswer({
+          answerId: JSON.parse(itemId),
+          userId: JSON.parse(userId),
+          hasUpVoted,
+          hasDownVoted,
+          path: pathname,
+        });
       }
 
       // TODO: SHOW A TOAST AFTER UPVOTING A QUESTION
@@ -73,13 +74,13 @@ const Votes = ({
           path: pathname,
         });
       } else if (type === "Answer") {
-        // await downVoteAnswer({
-        //   questionId: JSON.parse(itemId),
-        //   userId: JSON.parse(userId),
-        //   hasUpVoted,
-        //   hasDownVoted,
-        //   path: pathname,
-        // });
+        await downVoteAnswer({
+          answerId: JSON.parse(itemId),
+          userId: JSON.parse(userId),
+          hasUpVoted,
+          hasDownVoted,
+          path: pathname,
+        });
       }
     }
   };
@@ -130,18 +131,20 @@ const Votes = ({
         </div>
       </div>
 
-      <Image
-        src={
-          hasSaved
-            ? "/assets/icons/star-filled.svg"
-            : "/assets/icons/star-red.svg"
-        }
-        alt="star"
-        width={18}
-        height={18}
-        className="cursor-pointer"
-        onClick={handleSave}
-      />
+      {type === "Question" && (
+        <Image
+          src={
+            hasSaved
+              ? "/assets/icons/star-filled.svg"
+              : "/assets/icons/star-red.svg"
+          }
+          alt="star"
+          width={18}
+          height={18}
+          className="cursor-pointer"
+          onClick={handleSave}
+        />
+      )}
     </div>
   );
 };

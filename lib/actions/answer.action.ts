@@ -2,7 +2,11 @@
 
 import AnswerModel from "@/database/answer.model";
 import { connectToDatabase } from "../mongoose";
-import { CreateAnswerParams, GetAnswersParams } from "./shared.types";
+import {
+  AnswerVoteParams,
+  CreateAnswerParams,
+  GetAnswersParams,
+} from "./shared.types";
 import QuestionModel from "@/database/question.model";
 import { revalidatePath } from "next/cache";
 
@@ -29,7 +33,7 @@ export async function createAnswer(params: CreateAnswerParams) {
   }
 }
 
-// createAnswer server action that we can call from our frontend
+// getAnswers server action that we can call from our frontend
 export async function getAnswers(params: GetAnswersParams) {
   try {
     connectToDatabase();
@@ -41,6 +45,81 @@ export async function getAnswers(params: GetAnswersParams) {
       .sort({ createdAt: -1 }); // new answers appear ontop
 
     return { answers };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function upVoteAnswer(params: AnswerVoteParams) {
+  try {
+    connectToDatabase();
+
+    const { answerId, userId, hasUpVoted, hasDownVoted, path } = params;
+
+    let updateQuery = {};
+
+    if (hasUpVoted) {
+      updateQuery = { $pull: { upvotes: userId } };
+    } else if (hasDownVoted) {
+      updateQuery = {
+        $pull: { downvotes: userId },
+        $push: { upvotes: userId },
+      };
+    } else {
+      updateQuery = { $addToSet: { upvotes: userId } };
+    }
+
+    const answer = await AnswerModel.findByIdAndUpdate(answerId, updateQuery, {
+      new: true,
+    });
+
+    if (!answer) {
+      throw new Error("Answer not found");
+    }
+
+    // Increment author's reputation
+
+    // revalidate the peth so the front-end updates with the latest information
+    revalidatePath(path);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function downVoteAnswer(params: AnswerVoteParams) {
+  try {
+    connectToDatabase();
+
+    const { answerId, userId, hasUpVoted, hasDownVoted, path } = params;
+
+    let updateQuery = {};
+
+    if (hasDownVoted) {
+      // toggling the downvote on and off - we use $pull
+      updateQuery = { $pull: { downvotes: userId } };
+    } else if (hasUpVoted) {
+      updateQuery = {
+        $pull: { upvotes: userId },
+        $push: { downvotes: userId },
+      };
+    } else {
+      updateQuery = { $addToSet: { downvotes: userId } };
+    }
+
+    const answer = await AnswerModel.findByIdAndUpdate(answerId, updateQuery, {
+      new: true,
+    });
+
+    if (!answer) {
+      throw new Error("Question not found");
+    }
+
+    // Increment author's reputation
+
+    // revalidate the peth so the front-end updates with the latest information
+    revalidatePath(path);
   } catch (error) {
     console.log(error);
     throw error;
