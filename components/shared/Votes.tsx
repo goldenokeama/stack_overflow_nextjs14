@@ -1,5 +1,6 @@
 "use client";
 import { downVoteAnswer, upVoteAnswer } from "@/lib/actions/answer.action";
+import { viewQuestion } from "@/lib/actions/interaction.action";
 import {
   downVoteQuestion,
   upVoteQuestion,
@@ -8,6 +9,7 @@ import { toggleSaveQuestion } from "@/lib/actions/user.action";
 import { formatAndDivideNumber } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface Props {
   type: string;
@@ -30,7 +32,7 @@ const Votes = ({
   hasSaved,
 }: Props) => {
   const pathname = usePathname();
-  // const router = useRouter();
+  const router = useRouter();
 
   const handleSave = async () => {
     await toggleSaveQuestion({
@@ -91,6 +93,15 @@ const Votes = ({
       }
     }
   };
+
+  // Creating a useEffect for updating our view count for each question when ever the Votes Component loads.
+  // The Votes Component is on every question in its details page
+  useEffect(() => {
+    viewQuestion({
+      questionId: JSON.parse(itemId),
+      userId: userId ? JSON.parse(userId) : undefined,
+    });
+  }, [itemId, userId, pathname, router]);
 
   return (
     <div className="flex gap-5">
