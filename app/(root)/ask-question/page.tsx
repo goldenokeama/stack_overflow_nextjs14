@@ -20,7 +20,7 @@ const page = async () => {
     <div>
       <h1>Ask question</h1>
       <div>
-        <Question mongoUserId={JSON.stringify(mongoUser._id)} />
+        <Question mongoUserId={JSON.stringify(mongoUser?._id)} />
       </div>
     </div>
   );
