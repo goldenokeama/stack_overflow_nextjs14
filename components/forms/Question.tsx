@@ -4,8 +4,6 @@ import { Editor } from "@tinymce/tinymce-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-
-// 3RD STEP: BUILD OUR FORM, here we imported alot of shadcn components.
 import {
   Form,
   FormControl,
@@ -20,70 +18,75 @@ import { Button } from "../ui/button";
 import { QuestionsSchema } from "@/lib/validations";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
-import { createQuestiion } from "@/lib/actions/question.action";
+import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeProvider";
 
-// NOTE: WE WANT THIS FORM TO BE REUSABLE
-const type: any = "create";
-
 interface Props {
+  type?: string;
   mongoUserId: string;
+  questionDetails?: string;
 }
 
-// OUR QUESTION COMPONENT
-const Question = ({ mongoUserId }: Props) => {
-  // establish a reference using useRef hook so we don't have to manually track every key stroke
+const Question = ({ type, mongoUserId, questionDetails }: Props) => {
+  const { mode } = useTheme();
   const editorRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const pathname = usePathname(); // TO KNOW THE PATHNAME WE ARE ON RIGHT NOW
-  const { mode } = useTheme();
+  const pathname = usePathname();
+
+  const parsedQuestionDetails = JSON.parse(questionDetails || "");
+
+  const groupedTags = parsedQuestionDetails.tags.map((tag: any) => tag.name);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
     resolver: zodResolver(QuestionsSchema),
     defaultValues: {
-      title: "",
-      explanation: "",
-      tags: [],
+      title: parsedQuestionDetails.title || "",
+      explanation: parsedQuestionDetails.content || "",
+      tags: groupedTags || [],
     },
   });
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof QuestionsSchema>) {
-    console.log("OnSubmit fired");
-    console.log(mongoUserId);
-    console.log(JSON.parse(mongoUserId));
     setIsSubmitting(true);
 
-    // no matter what hapens, the finally block must run
     try {
-      // we can try to create a question or edit a question
-      // 1st let's create a question
-      // -- make an async call to my api --> createQuestion
-      await createQuestiion({
-        title: values.title,
-        content: values.explanation,
-        tags: values.tags,
-        author: JSON.parse(mongoUserId),
-        path: pathname,
-      });
-      // --- navigate to the home page to see the question we asked
-      router.push("/");
+      if (type === "Edit") {
+        await editQuestion({
+          questionId: parsedQuestionDetails._id,
+          title: values.title,
+          content: values.explanation,
+          path: pathname,
+        });
+
+        router.push(`/question/${parsedQuestionDetails._id}`);
+      } else {
+        await createQuestion({
+          title: values.title,
+          content: values.explanation,
+          tags: values.tags,
+          author: JSON.parse(mongoUserId),
+          path: pathname,
+        });
+
+        router.push("/");
+      }
     } catch (error) {
     } finally {
       setIsSubmitting(false);
     }
-
-    console.log(values);
   }
 
-  function handleInputKeyDown(e: React.KeyboardEvent, field: any) {
-    // checking if the enter key was pressed and if we are on the tags input field
+  const handleInputKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    field: any
+  ) => {
     if (e.key === "Enter" && field.name === "tags") {
       e.preventDefault();
-      // using type assertion "as" to tell TypeScript to treat the Element that triggered the event "e.target" as HTMLInputElement type so we can have access to its properties and methods
+
       const tagInput = e.target as HTMLInputElement;
       const tagValue = tagInput.value.trim();
 
@@ -95,7 +98,6 @@ const Question = ({ mongoUserId }: Props) => {
           });
         }
 
-        // checking that the tag doesn't exist already within the fields, this way, we can't add two JavaScript tags
         if (!field.value.includes(tagValue as never)) {
           form.setValue("tags", [...field.value, tagValue]);
           tagInput.value = "";
@@ -105,16 +107,15 @@ const Question = ({ mongoUserId }: Props) => {
         form.trigger();
       }
     }
-  }
+  };
 
-  function handleTagRemove(tag: string, field: any) {
-    // filtering through the array of tags
-    const newTag = field.value.filter((t: string) => t !== tag);
-    form.setValue("tags", newTag);
-  }
+  const handleTagRemove = (tag: string, field: any) => {
+    const newTags = field.value.filter((t: string) => t !== tag);
+
+    form.setValue("tags", newTags);
+  };
 
   return (
-    // step 3 from zod form
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -126,11 +127,11 @@ const Question = ({ mongoUserId }: Props) => {
           render={({ field }) => (
             <FormItem className="flex w-full flex-col">
               <FormLabel className="paragraph-semibold text-dark400_light800">
-                Question Title<span className="text-primary-500">*</span>
+                Question Title <span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
                 <Input
-                  className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light900 min-h-[56px] border"
+                  className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 min-h-[56px] border"
                   {...field}
                 />
               </FormControl>
@@ -148,19 +149,19 @@ const Question = ({ mongoUserId }: Props) => {
           render={({ field }) => (
             <FormItem className="flex w-full flex-col gap-3">
               <FormLabel className="paragraph-semibold text-dark400_light800">
-                Detailed explanation of your problem
+                Detailed explanation of your problem{" "}
                 <span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
                 <Editor
                   apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}
-                  onInit={(_evt, editor) => {
+                  onInit={(evt, editor) => {
                     // @ts-ignore
                     editorRef.current = editor;
                   }}
-                  onBlur={field.onBlur} // save the valur once we exit the editor
+                  onBlur={field.onBlur}
                   onEditorChange={(content) => field.onChange(content)}
-                  initialValue=""
+                  initialValue={parsedQuestionDetails.content || ""}
                   init={{
                     height: 350,
                     menubar: false,
@@ -175,16 +176,15 @@ const Question = ({ mongoUserId }: Props) => {
                       "anchor",
                       "searchreplace",
                       "visualblocks",
-                      "code",
+                      "codesample",
                       "fullscreen",
                       "insertdatetime",
                       "media",
                       "table",
-                      "codesample",
                     ],
                     toolbar:
-                      "undo redo | blocks | " +
-                      "codesample | bold italic forecolor | alignleft aligncenter " +
+                      "undo redo | " +
+                      "codesample | bold italic forecolor | alignleft aligncenter |" +
                       "alignright alignjustify | bullist numlist",
                     content_style: "body { font-family:Inter; font-size:16px }",
                     skin: mode === "dark" ? "oxide-dark" : "oxide",
@@ -200,39 +200,45 @@ const Question = ({ mongoUserId }: Props) => {
             </FormItem>
           )}
         />
-        {/* THE TAG FUNCTIONALITY */}
         <FormField
           control={form.control}
           name="tags"
           render={({ field }) => (
             <FormItem className="flex w-full flex-col">
               <FormLabel className="paragraph-semibold text-dark400_light800">
-                Tags<span className="text-primary-500">*</span>
+                Tags <span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
                 <>
                   <Input
-                    className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light900 min-h-[56px] border"
+                    disabled={type === "Edit"}
+                    className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 min-h-[56px] border"
                     placeholder="Add tags..."
                     onKeyDown={(e) => handleInputKeyDown(e, field)}
                   />
 
                   {field.value.length > 0 && (
-                    <div className="flex-start mt-2.5 gap-2">
+                    <div className="flex-start mt-2.5 gap-2.5">
                       {field.value.map((tag: any) => (
                         <Badge
                           key={tag}
                           className="subtle-medium background-light800_dark300 text-light400_light500 flex items-center justify-center gap-2 rounded-md border-none px-4 py-2 capitalize"
-                          onClick={() => handleTagRemove(tag, field)}
+                          onClick={() =>
+                            type !== "Edit"
+                              ? handleTagRemove(tag, field)
+                              : () => {}
+                          }
                         >
                           {tag}
-                          <Image
-                            src="/assets/icons/close.svg"
-                            alt="Close icon"
-                            width={12}
-                            height={12}
-                            className="cursor-pointer object-contain invert-0 dark:invert"
-                          />
+                          {type !== "Edit" && (
+                            <Image
+                              src="/assets/icons/close.svg"
+                              alt="Close icon"
+                              width={12}
+                              height={12}
+                              className="cursor-pointer object-contain invert-0 dark:invert"
+                            />
+                          )}
                         </Badge>
                       ))}
                     </div>
@@ -253,9 +259,9 @@ const Question = ({ mongoUserId }: Props) => {
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <>{type === "edit" ? "Editing..." : "Posting..."}</>
+            <>{type === "Edit" ? "Editing..." : "Posting..."}</>
           ) : (
-            <>{type === "edit" ? "Edit Question" : "Ask a Question"}</>
+            <>{type === "Edit" ? "Edit Question" : "Ask a Question"}</>
           )}
         </Button>
       </form>

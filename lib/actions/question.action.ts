@@ -7,6 +7,7 @@ import TagModel from "@/database/tag.model";
 import {
   CreateQuestionParams,
   DeleteQuestionParams,
+  EditQuestionParams,
   GetQuestionByIdParams,
   GetQuestionsParams,
   QuestionVoteParams,
@@ -36,7 +37,7 @@ export async function getQuestions(params: GetQuestionsParams) {
   }
 }
 
-export async function createQuestiion(params: CreateQuestionParams) {
+export async function createQuestion(params: CreateQuestionParams) {
   // we use trycatch block bcus we are dealing with asynchronous code
   // eslint-disable-next-line no-empty
   try {
@@ -196,6 +197,28 @@ export async function deleteQuestion(params: DeleteQuestionParams) {
       { questions: questionId },
       { $pull: { questions: questionId } }
     );
+
+    revalidatePath(path);
+  } catch (error) {
+    console.log(error);
+  }
+}
+export async function editQuestion(params: EditQuestionParams) {
+  try {
+    connectToDatabase();
+
+    const { questionId, title, content, path } = params;
+
+    const question = await QuestionModel.findById(questionId).populate("tags");
+
+    if (!question) {
+      throw new Error("Question not found");
+    }
+
+    question.title = title;
+    question.content = content;
+
+    await question.save();
 
     revalidatePath(path);
   } catch (error) {
