@@ -5,10 +5,12 @@ import { connectToDatabase } from "../mongoose";
 import {
   AnswerVoteParams,
   CreateAnswerParams,
+  DeleteAnswerParams,
   GetAnswersParams,
 } from "./shared.types";
 import QuestionModel from "@/database/question.model";
 import { revalidatePath } from "next/cache";
+import InteractionModel from "@/database/interaction.model";
 
 // createAnswer server action that we can call from our frontend
 export async function createAnswer(params: CreateAnswerParams) {
@@ -123,5 +125,30 @@ export async function downVoteAnswer(params: AnswerVoteParams) {
   } catch (error) {
     console.log(error);
     throw error;
+  }
+}
+
+export async function deleteAnswer(params: DeleteAnswerParams) {
+  try {
+    connectToDatabase();
+
+    const { answerId, path } = params;
+
+    const answer = await AnswerModel.findById(answerId);
+
+    if (!answer) {
+      throw new Error("Answer not found");
+    }
+
+    await answer.deleteOne({ _id: answerId });
+    await QuestionModel.updateMany(
+      { _id: answer.question },
+      { $pull: { answers: answerId } }
+    );
+    await InteractionModel.deleteMany({ answer: answerId });
+
+    revalidatePath(path);
+  } catch (error) {
+    console.log(error);
   }
 }

@@ -6,12 +6,15 @@ import { connectToDatabase } from "../mongoose";
 import TagModel from "@/database/tag.model";
 import {
   CreateQuestionParams,
+  DeleteQuestionParams,
   GetQuestionByIdParams,
   GetQuestionsParams,
   QuestionVoteParams,
 } from "./shared.types";
 import UserModel from "@/database/user.model";
 import { revalidatePath } from "next/cache";
+import AnswerModel from "@/database/answer.model";
+import InteractionModel from "@/database/interaction.model";
 
 export async function getQuestions(params: GetQuestionsParams) {
   // the GetQuestionsParams type helps us to know what's coming from the frontend
@@ -178,5 +181,24 @@ export async function downVoteQuestion(params: QuestionVoteParams) {
   } catch (error) {
     console.log(error);
     throw error;
+  }
+}
+export async function deleteQuestion(params: DeleteQuestionParams) {
+  try {
+    connectToDatabase();
+
+    const { questionId, path } = params;
+
+    await QuestionModel.deleteOne({ _id: questionId });
+    await AnswerModel.deleteMany({ question: questionId });
+    await InteractionModel.deleteMany({ question: questionId });
+    await TagModel.updateMany(
+      { questions: questionId },
+      { $pull: { questions: questionId } }
+    );
+
+    revalidatePath(path);
+  } catch (error) {
+    console.log(error);
   }
 }
