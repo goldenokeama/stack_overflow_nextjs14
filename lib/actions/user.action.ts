@@ -104,11 +104,23 @@ export async function getAllUsers(params: GetAllUsersParams) {
   try {
     connectToDatabase();
 
+    const { searchQuery } = params;
+
+    const query: FilterQuery<typeof UserModel> = {};
+
+    // searching both the username and name
+    if (searchQuery) {
+      query.$or = [
+        { name: { $regex: new RegExp(searchQuery, "i") } },
+        { username: { $regex: new RegExp(searchQuery, "i") } },
+      ];
+    }
+
     // destructuring the params and setting default values
     // const { page = 1, pageSize = 20, filter, searchQuery } = params;
 
     // passing an empty object into the UserModel(usercollection on mongoDB) means we want to get all users(user documents in the user collection) then .sort({createdAt:-1}) shows the new user document at the top
-    const users = await UserModel.find({}).sort({ createdAt: -1 });
+    const users = await UserModel.find(query).sort({ createdAt: -1 });
 
     // returning the users within an object
     return { users };
