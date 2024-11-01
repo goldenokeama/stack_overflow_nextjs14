@@ -6,31 +6,14 @@ import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { Button } from "@/components/ui/button";
 import { HomePageFilters } from "@/constants/filters";
 import { getQuestions } from "@/lib/actions/question.action";
+import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 
-// const questions = [
-//   {
-//     _id: "1",
-//     title: "Cascading Deletes in SQLAlchemy?",
-//     tags: [
-//       { _id: "1", name: "python" },
-//       { _id: "2", name: "sql" },
-//     ],
-//     author: {
-//       _id: "1",
-//       name: "John Doe",
-//       picture: "john-doe.jpg",
-//     },
-//     upvotes: 1500000,
-//     views: 500552,
-//     answers: [],
-//     createdAt: new Date("2023-09-01T12:00:00.000Z"),
-//   },
-// ];
-
-export default async function Home() {
+export default async function Home({ searchParams }: SearchParamsProps) {
   // suing our server action [getQuestions()] to get all the question documents in our databse
-  const result = await getQuestions({});
+  const result = await getQuestions({
+    searchQuery: searchParams.q,
+  });
 
   // console.log(result.questions);
 

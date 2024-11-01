@@ -16,6 +16,7 @@ import UserModel from "@/database/user.model";
 import { revalidatePath } from "next/cache";
 import AnswerModel from "@/database/answer.model";
 import InteractionModel from "@/database/interaction.model";
+import { FilterQuery } from "mongoose";
 
 export async function getQuestions(params: GetQuestionsParams) {
   // the GetQuestionsParams type helps us to know what's coming from the frontend
@@ -23,9 +24,20 @@ export async function getQuestions(params: GetQuestionsParams) {
   try {
     connectToDatabase();
 
+    const { searchQuery } = params;
+
+    const query: FilterQuery<typeof QuestionModel> = {};
+
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: new RegExp(searchQuery, "i") } },
+        { content: { $regex: new RegExp(searchQuery, "i") } },
+      ];
+    }
+
     // Getting all the question documents from the database and populating the tags array of id with the actual value
     // and the author field with the actual user data instead if the user id
-    const questions = await QuestionModel.find({})
+    const questions = await QuestionModel.find(query)
       .populate({ path: "tags", model: TagModel })
       .populate({ path: "author", model: UserModel })
       .sort({ createdAt: -1 });
