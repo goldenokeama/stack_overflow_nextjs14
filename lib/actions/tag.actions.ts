@@ -41,8 +41,16 @@ export async function getAllTags(params: GetAllTagsParams) {
   try {
     connectToDatabase();
 
+    const { searchQuery } = params;
+
+    const query: FilterQuery<typeof TagModel> = {};
+
+    if (searchQuery) {
+      query.$or = [{ name: { $regex: new RegExp(searchQuery, "i") } }];
+    }
+
     // Getting all the tags(tag documents) in the tag collection (TagModel) by passing an empty object into the find method
-    const tags = await TagModel.find({});
+    const tags = await TagModel.find(query);
 
     return { tags };
   } catch (error) {
@@ -54,7 +62,7 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
   try {
     connectToDatabase();
 
-    const { tagId, page = 1, pageSize = 10, searchQuery } = params;
+    const { tagId, searchQuery } = params;
 
     const tagFilter: FilterQuery<ITag> = { _id: tagId };
 
