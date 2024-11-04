@@ -25,7 +25,11 @@ export async function getQuestions(params: GetQuestionsParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter } = params;
+    const { searchQuery, filter, page = 1, pageSize = 2 } = params;
+
+    // Calculcate the number of posts to skip based on the page number and page size
+    // for instance, if we are on page 2, and pageSize is 20, then the skipAmount will be 20 posts
+    const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof QuestionModel> = {};
 
@@ -60,9 +64,18 @@ export async function getQuestions(params: GetQuestionsParams) {
     const questions = await QuestionModel.find(query)
       .populate({ path: "tags", model: TagModel })
       .populate({ path: "author", model: UserModel })
+      .skip(skipAmount)
+      .limit(pageSize)
       .sort(sortOptions);
 
-    return { questions };
+    // figuring out if the next page exists
+    const totalQuestions = await QuestionModel.countDocuments(query);
+
+    const isNext = totalQuestions > skipAmount + questions.length;
+    // skipAmount is the questions(posts) we have already skipped
+    // questions.length is the questions(posts) showing on the page
+
+    return { questions, isNext };
   } catch (error) {
     console.log(error);
     throw error;
