@@ -21,10 +21,11 @@ import { FilterQuery } from "mongoose";
 export async function getQuestions(params: GetQuestionsParams) {
   // the GetQuestionsParams type helps us to know what's coming from the frontend
   // and what can be accessed right here in our server
+
   try {
     connectToDatabase();
 
-    const { searchQuery } = params;
+    const { searchQuery, filter } = params;
 
     const query: FilterQuery<typeof QuestionModel> = {};
 
@@ -35,12 +36,31 @@ export async function getQuestions(params: GetQuestionsParams) {
       ];
     }
 
+    let sortOptions = {};
+
+    switch (filter) {
+      // key is filter and values are the different cases
+      case "newest":
+        sortOptions = { createdAt: -1 };
+        break;
+
+      case "frequent":
+        sortOptions = { views: -1 };
+        break;
+
+      case "unanswered":
+        query.answers = { $size: 0 };
+        break;
+      default:
+        break;
+    }
+
     // Getting all the question documents from the database and populating the tags array of id with the actual value
     // and the author field with the actual user data instead if the user id
     const questions = await QuestionModel.find(query)
       .populate({ path: "tags", model: TagModel })
       .populate({ path: "author", model: UserModel })
-      .sort({ createdAt: -1 });
+      .sort(sortOptions);
 
     return { questions };
   } catch (error) {

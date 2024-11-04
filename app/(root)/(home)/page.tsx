@@ -13,6 +13,7 @@ export default async function Home({ searchParams }: SearchParamsProps) {
   // suing our server action [getQuestions()] to get all the question documents in our databse
   const result = await getQuestions({
     searchQuery: searchParams.q,
+    filter: searchParams.filter,
   });
 
   // console.log(result.questions);
