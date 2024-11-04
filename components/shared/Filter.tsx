@@ -35,6 +35,7 @@ const Filter = ({ filters, otherClasses, containerClasses }: Props) => {
     });
 
     router.push(newUrl, { scroll: false });
+    // router.push(newUrl, { scroll: false })
   };
 
   return (
