@@ -10,28 +10,18 @@ import { formatAndDivideNumber, getTimestamp } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import React from "react";
 
-interface Params {
-  id: string;
-}
-const page = async ({ params }: { params: Params }) => {
-  // using the id of the question (params.id), get the question from the questions collection on our db
-  const result = await getQuestionById({ questionId: params.id });
-
-  // extracting a property named userId from an object returned by the auth() function from clerk database and ASSIGN it to a new constant variable named clerkId.
+const Page = async ({ params, searchParams }) => {
   const { userId: clerkId } = auth();
-
-  // you have to sign in b4 you can provide an answe
-  if (!clerkId) redirect("/sign-in");
 
   let mongoUser;
 
   if (clerkId) {
-    // using the getUserById server action to get a single user document from mongoDB by passing in an object with userId property whose value is clerkId
     mongoUser = await getUserById({ userId: clerkId });
   }
+
+  const result = await getQuestionById({ questionId: params.id });
 
   return (
     <>
@@ -69,6 +59,7 @@ const page = async ({ params }: { params: Params }) => {
           {result.title}
         </h2>
       </div>
+
       <div className="mb-8 mt-5 flex flex-wrap gap-4">
         <Metric
           imgUrl="/assets/icons/clock.svg"
@@ -93,10 +84,8 @@ const page = async ({ params }: { params: Params }) => {
         />
       </div>
 
-      {/* creating a shared component called <ParseHTML/> */}
       <ParseHTML data={result.content} />
 
-      {/* Rendering our tags according to the design */}
       <div className="mt-8 flex flex-wrap gap-2">
         {result.tags.map((tag: any) => (
           <RenderTag
@@ -108,14 +97,14 @@ const page = async ({ params }: { params: Params }) => {
         ))}
       </div>
 
-      {/* Rendering all the Answers to the question */}
       <AllAnswers
         questionId={result._id}
         userId={mongoUser._id}
         totalAnswers={result.answers.length}
+        page={searchParams?.page}
+        filter={searchParams?.filter}
       />
 
-      {/* Rendering the Answer form for inputting our answer for the question */}
       <Answer
         question={result.content}
         questionId={JSON.stringify(result._id)}
@@ -125,4 +114,4 @@ const page = async ({ params }: { params: Params }) => {
   );
 };
 
-export default page;
+export default Page;

@@ -122,9 +122,11 @@ export async function getAllUsers(params: GetAllUsersParams) {
       case "new_users":
         sortOptions = { joinedAt: -1 };
         break;
+
       case "old_users":
         sortOptions = { joinedAt: 1 };
         break;
+
       case "top_contributors":
         sortOptions = { reputation: -1 };
         break;
