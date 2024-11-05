@@ -104,7 +104,9 @@ export async function getAllUsers(params: GetAllUsersParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter } = params;
+    const { searchQuery, filter, page = 1, pageSize = 10 } = params;
+
+    const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof UserModel> = {};
 
@@ -139,10 +141,17 @@ export async function getAllUsers(params: GetAllUsersParams) {
     // const { page = 1, pageSize = 20, filter, searchQuery } = params;
 
     // passing an empty object into the UserModel(usercollection on mongoDB) means we want to get all users(user documents in the user collection) then .sort({createdAt:-1}) shows the new user document at the top
-    const users = await UserModel.find(query).sort(sortOptions);
+    const users = await UserModel.find(query)
+      .sort(sortOptions)
+      .skip(skipAmount)
+      .limit(pageSize);
+
+    const totalUsers = await UserModel.countDocuments(query);
+
+    const isNext = totalUsers > skipAmount * users.length;
 
     // returning the users within an object
-    return { users };
+    return { users, isNext };
   } catch (error) {
     console.log(error);
     throw error;

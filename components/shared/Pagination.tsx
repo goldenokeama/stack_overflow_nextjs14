@@ -27,6 +27,7 @@ const Pagination = ({ pageNumber, isNext }: Props) => {
     router.push(newUrl);
   };
 
+  // Making sure we won't see the pagination component if we can't do any action.
   if (!isNext && pageNumber === 1) return null;
 
   return (
