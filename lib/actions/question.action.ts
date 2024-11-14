@@ -120,8 +120,15 @@ export async function createQuestion(params: CreateQuestionParams) {
     });
 
     // Create an interaction record for the user's ask_question action
+    await InteractionModel.create({
+      user: author,
+      action: "ask_question",
+      question: questionDoc._id,
+      tags: tagDocuments,
+    });
 
     // Increment author's reputation by +5 for creating a question
+    await UserModel.findByIdAndUpdate(author, { $inc: { reputation: 5 } });
 
     // NOTE: IN NEXTjs13, we have to reload the home page after asking a question so it apppears on the home page
     revalidatePath(path);
@@ -180,7 +187,15 @@ export async function upVoteQuestion(params: QuestionVoteParams) {
       throw new Error("Question not found");
     }
 
-    // Increment author's reputation
+    // Increment author's reputation by +1/-1 for upvoting/revoking an upvote to the question
+    await UserModel.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasUpVoted ? -1 : 1 },
+    });
+
+    // Increment author's reputation by +10/-10 for recieving an upvote/downvote to the question
+    await UserModel.findByIdAndUpdate(question.author, {
+      $inc: { reputation: hasUpVoted ? -10 : 10 },
+    });
 
     // revalidate the peth so the front-end updates with the latest information
     revalidatePath(path);
@@ -221,6 +236,13 @@ export async function downVoteQuestion(params: QuestionVoteParams) {
     }
 
     // Increment author's reputation
+    await UserModel.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasDownVoted ? -2 : 2 },
+    });
+
+    await UserModel.findByIdAndUpdate(question.author, {
+      $inc: { reputation: hasDownVoted ? -10 : 10 },
+    });
 
     // revalidate the peth so the front-end updates with the latest information
     revalidatePath(path);
