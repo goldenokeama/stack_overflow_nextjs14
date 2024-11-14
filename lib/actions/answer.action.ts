@@ -11,6 +11,7 @@ import {
 import QuestionModel from "@/database/question.model";
 import { revalidatePath } from "next/cache";
 import InteractionModel from "@/database/interaction.model";
+import UserModel from "@/database/user.model";
 
 // createAnswer server action that we can call from our frontend
 export async function createAnswer(params: CreateAnswerParams) {
@@ -22,11 +23,21 @@ export async function createAnswer(params: CreateAnswerParams) {
     const newAnswer = await AnswerModel.create({ content, author, question });
 
     // Add the just created answer document to the question document answer's array
-    await QuestionModel.findByIdAndUpdate(question, {
+    const questionObject = await QuestionModel.findByIdAndUpdate(question, {
       $push: { answers: newAnswer._id },
     });
 
-    // TODO: Add interaction... i.e increase the reputation of the user that created the answer
+    // Add interaction... i.e increase the reputation of the user that created the answer
+    await InteractionModel.create({
+      user: author,
+      action: "answer",
+      question,
+      answer: newAnswer._id,
+      tags: questionObject.tags,
+    });
+
+    // increasing the author's reputation by 10 points for adding an answer
+    await UserModel.findByIdAndUpdate(author, { $inc: { reputation: 10 } });
 
     revalidatePath(path);
   } catch (error) {
@@ -111,6 +122,13 @@ export async function upVoteAnswer(params: AnswerVoteParams) {
     }
 
     // Increment author's reputation
+    await UserModel.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasUpVoted ? -2 : 2 },
+    });
+
+    await UserModel.findByIdAndUpdate(answer.author, {
+      $inc: { reputation: hasUpVoted ? -10 : 10 },
+    });
 
     // revalidate the peth so the front-end updates with the latest information
     revalidatePath(path);
@@ -149,6 +167,13 @@ export async function downVoteAnswer(params: AnswerVoteParams) {
     }
 
     // Increment author's reputation
+    await UserModel.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasDownVoted ? -2 : 2 },
+    });
+
+    await UserModel.findByIdAndUpdate(answer.author, {
+      $inc: { reputation: hasDownVoted ? -10 : 10 },
+    });
 
     // revalidate the peth so the front-end updates with the latest information
     revalidatePath(path);
