@@ -14,7 +14,7 @@ const page = async () => {
   // Passing an object to the getUserById function
   const mongoUser = await getUserById({ userId });
 
-  console.log(mongoUser);
+  // console.log(mongoUser);
 
   return (
     <div>

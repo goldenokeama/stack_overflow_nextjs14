@@ -301,7 +301,7 @@ export async function getUserInfo(params: GetUserByIdParams) {
       },
     ]);
 
-    const [answerUpvotes] = await Answer.aggregate([
+    const [answerUpvotes] = await AnswerModel.aggregate([
       { $match: { author: user._id } },
       {
         $project: {
