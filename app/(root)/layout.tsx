@@ -1,6 +1,7 @@
 import LeftSidebar from "@/components/shared/LeftSidebar";
 import RightSidebar from "@/components/shared/RightSidebar";
 import Navbar from "@/components/shared/navbar/Navbar";
+import { Toaster } from "@/components/ui/toaster";
 import React from "react";
 
 // In the Layout Component below from line 7 to line 18, we essentially have the entire structure of our application
@@ -15,8 +16,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </section>
         <RightSidebar />
       </div>
-      {/* <Toaster/> */}
-      {/* Toaster component, a notification that pops up once we do some kind of action  */}
+      {/* Toaster Component */}
+      <Toaster />
     </main>
   );
 };

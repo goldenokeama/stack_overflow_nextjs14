@@ -11,6 +11,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { toast } from "@/hooks/use-toast";
+
 interface Props {
   type: string;
   itemId: string;
@@ -40,13 +42,20 @@ const Votes = ({
       questionId: JSON.parse(itemId),
       path: pathname,
     });
+
+    return toast({
+      title: `Question ${!hasSaved ? "Saved in" : "Removed from"} your collection`,
+      variant: !hasSaved ? "default" : "destructive",
+    });
   };
 
   const handleVote = async (action: string) => {
     // using the upVoteQuestion and downVoteQuestion server actions
     if (!userId) {
-      // if somehow a user was able to see this but they are not logged in, we want to exit out of this handleVote function
-      return;
+      return toast({
+        title: "Please log in",
+        description: "You must be logged in to perform this action",
+      });
     }
 
     if (action === "upvote") {
@@ -70,7 +79,10 @@ const Votes = ({
 
       // TODO: SHOW A TOAST AFTER UPVOTING A QUESTION
 
-      return;
+      return toast({
+        title: `Upvote ${!hasUpVoted ? "Successful" : "Removed"}`,
+        variant: !hasUpVoted ? "default" : "destructive",
+      });
     }
 
     if (action === "downvote") {
@@ -91,6 +103,11 @@ const Votes = ({
           path: pathname,
         });
       }
+
+      return toast({
+        title: `Downvote ${!hasDownVoted ? "Successful" : "Removed"}`,
+        variant: !hasDownVoted ? "default" : "destructive",
+      });
     }
   };
 
