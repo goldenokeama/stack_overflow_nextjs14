@@ -10,6 +10,12 @@ import { getQuestions } from "@/lib/actions/question.action";
 import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home | Dev Overflow",
+};
+
 export default async function Home({ searchParams }: SearchParamsProps) {
   // suing our server action [getQuestions()] to get all the question documents in our databse
   const result = await getQuestions({
