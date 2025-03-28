@@ -11,6 +11,7 @@ import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { redirect } from "next/navigation";
 
 const Page = async ({ params, searchParams }: any) => {
   const { userId: clerkId } = auth();
@@ -19,6 +20,8 @@ const Page = async ({ params, searchParams }: any) => {
 
   if (clerkId) {
     mongoUser = await getUserById({ userId: clerkId });
+  } else {
+    redirect("/sign-in");
   }
 
   const result = await getQuestionById({ questionId: params.id });
